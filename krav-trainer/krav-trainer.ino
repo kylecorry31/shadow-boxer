@@ -1,23 +1,51 @@
-#include "PunchDetector.h"
+#include <Adafruit_MPU6050.h>
+#include <SoftwareSerial.h>
 
-PunchDetector leftPunch {};
-PunchDetector rightPunch {};
+SoftwareSerial bluetooth(10, 11); // RX | TX
+
+Adafruit_MPU6050 left{};
+Adafruit_MPU6050 right{};
 
 void setup() {
   Serial.begin(9600);
-  
+  bluetooth.begin(9600);
+
+  while (!left.begin()){
+    delay(10);
+  }
+
+  while (!right.begin()){
+    delay(10);
+  }
+
+  left.setAccelerometerRange(MPU6050_RANGE_16_G);
+  right.setAccelerometerRange(MPU6050_RANGE_16_G);
+
+  left.setFilterBandwidth(MPU6050_BAND_21_HZ);
+  right.setFilterBandwidth(MPU6050_BAND_21_HZ);
 }
 
 void loop() {
 
-  float leftAcceleration = 0;
-  float rightAcceleration = 0;
+  sensors_event_t leftA, leftG, leftTemp;
+  sensors_event_t rightA, rightG, rightTemp;
 
-  if (leftPunch.detect(leftAcceleration)){
-    Serial.println("Left punch");  
-  }
+  left.getEvent(&leftA, &leftG, &leftTemp);
+  right.getEvent(&rightA, &rightG, &rightTemp);
 
-  if (rightPunch.detect(rightAcceleration)){
-    Serial.println("Right punch");  
-  }
+  bluetooth.print(0);
+  bluetooth.print(',');
+  bluetooth.print(leftA.acceleration.x);
+  bluetooth.print(',');
+  bluetooth.print(-leftA.acceleration.y);
+  bluetooth.print(',');
+  bluetooth.println(leftA.acceleration.z);
+
+  bluetooth.print(1);
+  bluetooth.print(',');
+  bluetooth.print(rightA.acceleration.x);
+  bluetooth.print(',');
+  bluetooth.print(rightA.acceleration.y);
+  bluetooth.print(',');
+  bluetooth.println(rightA.acceleration.z);
 }
