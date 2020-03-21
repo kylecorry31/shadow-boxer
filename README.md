@@ -1,2 +1,2 @@
-# krav-trainer
+# Shadow Boxer
  An Arduino powered Krav Maga punch combo assistant
